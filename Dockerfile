@@ -17,7 +17,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force && \
+RUN npm ci --omit=dev && npm install --no-save supergateway && npm cache clean --force && \
     addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
@@ -25,4 +25,4 @@ COPY --from=builder /app/dist/ dist/
 
 USER nodejs
 ENV NODE_ENV=production
-ENTRYPOINT ["node", "dist/index.js"]
+CMD ["sh", "-c", "npx --no-install supergateway --stdio \"node dist/index.js\" --outputTransport streamableHttp --stateful --port \"$PORT\" --healthEndpoint /healthz --apiKey \"$SUPERGATEWAY_API_KEY\""]
