@@ -264,6 +264,34 @@ const tools = [
       };
     },
   }),
+    defineTool({
+    name: "discord_get_channel",
+    description:
+      "Read a channel's details: name, type, category, position and topic. Read-only, changes nothing.",
+    annotations: {
+      title: "Get channel",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+    schema: z.object({
+      channel_id: snowflake.describe("ID (snowflake) of the channel to read."),
+    }),
+    handle: async ({ channel_id }) => {
+      const channel = await getGuildChannel(channel_id);
+      const topic = "topic" in channel ? (channel.topic ?? null) : null;
+      const info = {
+        id: channel.id,
+        name: channel.name,
+        type: ChannelType[channel.type],
+        category_id: channel.parentId ?? null,
+        position: channel.position,
+        topic,
+      };
+      return { content: [{ type: "text", text: JSON.stringify(info, null, 2) }] };
+    },
+  }),
 ];
 
 export default defineModule(tools);
